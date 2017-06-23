@@ -1,0 +1,10 @@
+include 'api', 'server', 'irc', 'discord', 'vkontakte', 'minecraft', 'gui'
+rootProject.name = 'megabridge'
+project(':api').name = 'megabridge-api'
+project(':discord').name = 'megabridge-discord'
+project(':gui').name = 'megabridge-gui'
+project(':irc').name = 'megabridge-irc'
+project(':minecraft').name = 'megabridge-minecraft'
+project(':server').name = 'megabridge-server'
+project(':vkontakte').name = 'megabridge-vkontakte'
+

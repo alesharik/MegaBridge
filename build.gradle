@@ -1,0 +1,45 @@
+group 'com.alesharik'
+version '1.0'
+
+allprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        repositories {
+            maven {
+                url  "http://dl.bintray.com/alesharik/com.alesharik"
+            }
+        }
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+        compile 'com.alesharik:alesharikwebserver-api:0.1'
+    }
+}
+
+subprojects {
+    sourceSets {
+        main {
+            java {
+                srcDirs 'src'
+            }
+        }
+        test {
+            java {
+                srcDirs 'test'
+            }
+        }
+    }
+}
+
+configure(subprojects.findAll {it.name != 'megabridge-api'}) {
+    dependencies {
+        compile project(':megabridge-api')
+    }
+}
