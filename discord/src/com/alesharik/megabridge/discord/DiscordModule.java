@@ -78,7 +78,7 @@ public class DiscordModule implements Module {
 
             api.set(jda);
         } catch (InterruptedException | RateLimitedException e) {
-            e.getStackTrace();
+            e.printStackTrace();
         }
     }
 
