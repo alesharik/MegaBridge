@@ -7,4 +7,3 @@ project(':irc').name = 'megabridge-irc'
 project(':minecraft').name = 'megabridge-minecraft'
 project(':server').name = 'megabridge-server'
 project(':vkontakte').name = 'megabridge-vkontakte'
-

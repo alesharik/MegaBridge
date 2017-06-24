@@ -1,0 +1,3 @@
+dependencies {
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.0.0_165'
+}
