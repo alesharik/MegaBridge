@@ -1,3 +1,4 @@
 dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+    compile group: 'com.intellij', name: 'forms_rt', version: '7.0.3'
 }
