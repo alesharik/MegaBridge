@@ -30,6 +30,9 @@ public class UnloadModuleHttpHandler extends HttpHandler {
 
     @Override
     public void service(Request request, Response response) throws Exception {
+        if(!TokenStorage.isTokenValid(request.getCookies()))
+            response.setStatus(HttpStatus.FORBIDDEN_403);
+
         String name = request.getParameter("name");
         moduleManager.unload(name);
         response.setStatus(HttpStatus.OK_200);

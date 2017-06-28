@@ -27,6 +27,9 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 public class GetModulesHttpHandler extends HttpHandler {
     @Override
     public void service(Request request, Response response) throws Exception {
+        if(!TokenStorage.isTokenValid(request.getCookies()))
+            response.setStatus(HttpStatus.FORBIDDEN_403);
+
         String text = GsonUtils.getGson().toJson(ModuleRegistry.getModules());
         response.setStatus(HttpStatus.OK_200);
         response.setContentLength(text.length());

@@ -17,33 +17,27 @@
 
 package com.alesharik.megabridge.main.web;
 
-import com.alesharik.megabridge.api.GsonUtils;
-import com.alesharik.megabridge.api.configuration.Configuration;
-import com.alesharik.megabridge.main.module.ModuleManager;
-import com.alesharik.megabridge.main.module.ModuleNotFoundException;
-import lombok.AllArgsConstructor;
+import com.alesharik.megabridge.main.Main;
+import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.HttpStatus;
 
-@AllArgsConstructor
-public class LoadModuleHttpHandler extends HttpHandler {
-    private final ModuleManager moduleManager;
-
+public class LoginHttpHandler extends HttpHandler {
     @Override
     public void service(Request request, Response response) throws Exception {
-        if(!TokenStorage.isTokenValid(request.getCookies()))
-            response.setStatus(HttpStatus.FORBIDDEN_403);
-
-        String name = request.getParameter("name");
-        String configuration = request.getParameter("config");
-        Configuration config = GsonUtils.getGson().fromJson(configuration, Configuration.class);
-        try {
-            moduleManager.load(name, config);
+        String login = request.getParameter("login");
+        String password = request.getParameter("password");
+        if(Main.isLoginPasswordValid(login, password)) {
             response.setStatus(HttpStatus.OK_200);
-        } catch (ModuleNotFoundException e) {
-            response.setStatus(HttpStatus.NOT_FOUND_404);
+            String token = TokenStorage.getToken();
+            Cookie cookie = new Cookie("token", token);
+            cookie.setMaxAge(3600);
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+        } else {
+            response.setStatus(HttpStatus.UNAUTHORIZED_401);
         }
     }
 }

@@ -17,16 +17,47 @@
 
 package com.alesharik.megabridge.gui;
 
-import com.alesharik.megabridge.gui.form.LoginDialog;
+import com.alesharik.megabridge.gui.form.LoginFormController;
 import com.alesharik.webserver.api.agent.Agent;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
         while(Agent.isScanning())
             Thread.sleep(1);
 
-        LoginDialog dialog = new LoginDialog();
-        dialog.pack();
-        dialog.setVisible(true);
+        new JFXPanel();
+        Platform.runLater(() -> {
+            new JFXPanel();
+
+            FXMLLoader root = getLoader(Main.class.getResource("/com/alesharik/megabridge/gui/LoginForm.fxml"));
+            Scene scene = new Scene(root.getRoot(), 300, 150);
+
+            Stage stage = new Stage();
+            stage.setTitle("Login");
+            stage.setScene(scene);
+            stage.show();
+
+            LoginFormController controller = root.getController();
+            controller.setStage(stage);
+        });
+
+    }
+
+    public static FXMLLoader getLoader(URL url) {
+        FXMLLoader loader = new FXMLLoader(url);
+        try {
+            loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return loader;
     }
 }

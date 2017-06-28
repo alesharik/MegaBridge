@@ -21,20 +21,35 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @UtilityClass
 public final class ServerManager {
     private static final AtomicReference<CloseableHttpClient> httpClientRef = new AtomicReference<>();
 
+    private static final AtomicReference<String> server = new AtomicReference<>();
+    private static final AtomicReference<String> login = new AtomicReference<>();
+    private static final AtomicReference<String> password = new AtomicReference<>();
+    private static final AtomicBoolean isConnected = new AtomicBoolean();
+
     static {
-        httpClientRef.set(HttpClients.createDefault());
+        BasicCookieStore cookieStore = new BasicCookieStore();
+        httpClientRef.set(HttpClientBuilder.create()
+                .setDefaultCookieStore(cookieStore)
+                .build());
     }
 
+    /**
+     * Tries to ping server
+     */
     public static boolean isValid(String server) {
         HttpGet get = new HttpGet("http://" + server + "/ping");
         try {
@@ -45,5 +60,29 @@ public final class ServerManager {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public static boolean login(String server, String login, String password) {
+        try {
+            HttpGet get = new HttpGet(new URIBuilder()
+                    .setHost(server)
+                    .setScheme("http")
+                    .setPath("/login")
+                    .setParameter("login", login)
+                    .setParameter("password", password)
+                    .build());
+
+            HttpResponse response = httpClientRef.get().execute(get);
+            boolean b = response.getStatusLine().getStatusCode() == 200;
+            if(b) {
+                ServerManager.server.set(server);
+                ServerManager.login.set(login);
+                ServerManager.password.set(password);
+            }
+            return b;
+        } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

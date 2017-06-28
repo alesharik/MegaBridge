@@ -31,6 +31,9 @@ public class GetLoadedModulesHttpHandler extends HttpHandler {
 
     @Override
     public void service(Request request, Response response) throws Exception {
+        if(!TokenStorage.isTokenValid(request.getCookies()))
+            response.setStatus(HttpStatus.FORBIDDEN_403);
+
         String text = GsonUtils.getGson().toJson(moduleManager.getLoadedModules());
         response.setStatus(HttpStatus.OK_200);
         response.setContentLength(text.length());

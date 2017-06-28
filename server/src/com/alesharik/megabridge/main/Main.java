@@ -22,19 +22,39 @@ import com.alesharik.megabridge.main.module.ModuleManagerImpl;
 import com.alesharik.megabridge.main.web.GetLoadedModulesHttpHandler;
 import com.alesharik.megabridge.main.web.GetModulesHttpHandler;
 import com.alesharik.megabridge.main.web.LoadModuleHttpHandler;
+import com.alesharik.megabridge.main.web.LoginHttpHandler;
 import com.alesharik.megabridge.main.web.PingHttpHandler;
 import com.alesharik.megabridge.main.web.UnloadModuleHttpHandler;
+import com.alesharik.webserver.api.LoginPasswordCoder;
 import com.alesharik.webserver.api.agent.Agent;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.utils.Charsets;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class Main {
+    private static final AtomicReference<String> logPass = new AtomicReference<>();
+
     public static void main(String[] args) throws InterruptedException, IOException {
         while(Agent.isScanning())
             Thread.sleep(1);
+
+        File configFile = new File("./config.txt");
+        if(!configFile.exists()) {
+            if(!configFile.createNewFile()) {
+                throw new IOException();
+            }
+            Files.write(configFile.toPath(), "admin:admin".getBytes(Charsets.UTF8_CHARSET));
+            logPass.set(LoginPasswordCoder.encode("admin", "admin"));
+        } else {
+            String[] parts = new String(Files.readAllBytes(configFile.toPath()), Charsets.UTF8_CHARSET).split(":");
+            logPass.set(LoginPasswordCoder.encode(parts[0], parts[1]));
+        }
 
         ModuleManager moduleManager = new ModuleManagerImpl();
         HttpServer server = new HttpServer();
@@ -44,6 +64,8 @@ public final class Main {
         serverConfiguration.addHttpHandler(new LoadModuleHttpHandler(moduleManager), "/api/module/load");
         serverConfiguration.addHttpHandler(new UnloadModuleHttpHandler(moduleManager), "/api/module/unload");
         serverConfiguration.addHttpHandler(new GetLoadedModulesHttpHandler(moduleManager), "/api/module/loaded");
+
+        serverConfiguration.addHttpHandler(new LoginHttpHandler(), "/login");
         serverConfiguration.addHttpHandler(new PingHttpHandler(), "/ping");
 
         server.start();
@@ -51,5 +73,9 @@ public final class Main {
         System.in.read();
 
         server.stop();
+    }
+
+    public static boolean isLoginPasswordValid(String login, String password) {
+        return logPass.get().equals(LoginPasswordCoder.encode(login, password));
     }
 }
